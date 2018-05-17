@@ -17,7 +17,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <vaadin.version>10.0.0.beta10</vaadin.version>
+        <vaadin.version>1.0-SNAPSHOT</vaadin.version>
 
         <jetty.version>9.3.7.v20160115</jetty.version>
         <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
@@ -32,6 +32,10 @@
              <id>Vaadin Directory</id>
              <url>http://maven.vaadin.com/vaadin-addons</url>
         </repository>
+        <repository>
+            <id>vaadin-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -41,22 +45,27 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-bom</artifactId>
-                <type>pom</type>
-                <scope>import</scope>
-                <version>${vaadin.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-core</artifactId>
+            <artifactId>flow</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-data</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-lumo-theme</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+         <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-button-flow</artifactId>
+            <version>${vaadin.version}</version>
         </dependency>
 
         <!-- Added to provide logging output as Flow uses -->
@@ -64,6 +73,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
+            <version>1.7.25</version>
         </dependency>
 
         <dependency>

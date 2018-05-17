@@ -1,0 +1,26 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html">
+
+<dom-module id="test-view">
+    <template>
+        <template is="dom-repeat" items="{{items}}">
+            <div><span on-click="toggleEnabled">{{item.enabled}}</span> <span>{{item.text}}</span></div>
+        </template>
+</template>
+    <script>
+        class TestView extends Polymer.Element {
+            static get is() {
+                return 'test-view';
+            }
+            connectedCallback() {
+                    super.connectedCallback();
+                    this.$server.add();
+            }
+            toggleEnabled(e) {
+                    var item = e.model.item;
+                    this.$server.toggle(item);
+            }
+        }
+        customElements.define(TestView.is, TestView);
+    </script>
+</dom-module>
