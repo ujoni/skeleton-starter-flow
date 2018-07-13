@@ -7,6 +7,7 @@ dist: trusty
 before_install:
   # Disable all Travis default repositories
   - sed -i "s/activeByDefault>true</activeByDefault>false</g"  ~/.m2/settings.xml
+  - verify-no-unpinned-dependencies.sh
 
 script:
   - mvn -B -e -V clean verify
