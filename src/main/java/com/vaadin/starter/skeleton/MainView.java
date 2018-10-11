@@ -1,21 +1,36 @@
 package com.vaadin.starter.skeleton;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.PWA;
+import java.util.List;
 
-/**
- * The main view contains a button and a click listener.
- */
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.router.Route;
+import com.vaadin.starter.skeleton.BookService.Book;
+
 @Route("")
-@PWA(name = "Project Base for Vaadin Flow", shortName = "Project Base")
-public class MainView extends VerticalLayout {
+public class MainView extends HorizontalLayout {
 
     public MainView() {
-        Button button = new Button("Click me",
-                event -> Notification.show("Clicked!"));
-        add(button);
+        ComboBox<Book> comboBox = new ComboBox<>();
+        comboBox.setWidth("250px");
+
+        List<Book> books = BookService.getBooks(30);
+        comboBox.setItems(books);
+
+        comboBox.setItemLabelGenerator(Book::getName);
+
+        comboBox.setRenderer(TemplateRenderer.<Book> of(
+                "<div>[[item.name]]<br><small>By: [[item.author]]</small></div>")
+                .withProperty("name", Book::getName)
+                .withProperty("author", Book::getAuthor));
+
+        Button button = new Button("Add more books", e -> {
+            books.addAll(BookService.getBooks(30));
+            comboBox.getDataProvider().refreshAll();
+        });
+
+        add(comboBox, button);
     }
 }
