@@ -5,16 +5,14 @@ import java.util.List;
 
 import org.vaadin.stefan.fullcalendar.CalendarViewImpl;
 import org.vaadin.stefan.fullcalendar.Entry;
-import org.vaadin.stefan.fullcalendar.EntryDroppedEvent;
 
-import com.vaadin.starter.skeleton.calendar.EntryUpdatedEvent;
-import com.vaadin.starter.skeleton.calendar.ExposedEntryDroppedEvent;
+import com.vaadin.starter.skeleton.calendar.CalendarNotification;
 import com.vaadin.starter.skeleton.calendar.ModifiedFullCalendar;
-import com.vaadin.starter.skeleton.calendar.ViewChangedEvent;
-import com.vaadin.starter.skeleton.exporter.EventPublisher;
 import com.vaadin.starter.skeleton.exporter.PropertyConfiguration;
-import com.vaadin.starter.skeleton.exporter.WebComponentConfiguration;
+import com.vaadin.starter.skeleton.exporter.WebComponentDefinition;
 import com.vaadin.starter.skeleton.exporter.WebComponentExporter;
+
+import elemental.json.JsonValue;
 
 
 public class ModifiedFullCalendarExporter implements
@@ -26,77 +24,50 @@ public class ModifiedFullCalendarExporter implements
     }
 
     @Override
-    public void configure(WebComponentConfiguration<ModifiedFullCalendar> configuration) {
-        configuration.addProperty("user-id", Integer.class)
+    public void define(WebComponentDefinition<ModifiedFullCalendar> definition) {
+        definition.addProperty("user-id", -1)
                 // validation is inside handler, exception based
-                .onChange(ModifiedFullCalendar::setUser)
-                // no property update events (better name pending)
-                .noNotify();
+                .onChange(ModifiedFullCalendar::setUser);
 
-        configuration.addProperty("display-mode", CalendarViewImpl.class)
-                .defaultValue(CalendarViewImpl.MONTH)
-                // custom string (de)serialization
-                .serializer(CalendarViewImpl::valueOf,
-                        CalendarViewImpl::getClientSideValue)
-                .onChange(ModifiedFullCalendar::changeView)
-                // update property on component-event
-                .updateOn(ViewChangedEvent.class,
-                        ModifiedFullCalendar::getView);
+        definition.addProperty("display-mode", CalendarViewImpl.MONTH)
+                .onChange(ModifiedFullCalendar::changeView);
 
-        // the property reference type is pretty ugly
-        PropertyConfiguration<ModifiedFullCalendar, List<Entry>> entryProperty =
-                // add a list property
-                configuration.addListProperty("entries", Entry.class)
+        // add a list property
+        PropertyConfiguration<ModifiedFullCalendar, List<Entry>> entriesProperty =
+                definition.addListProperty("entries", Entry.class)
                 .readOnly();
 
         PropertyConfiguration<ModifiedFullCalendar, LocalDate> selectedDateProperty =
-                configuration.addProperty("selected-date",
-                        LocalDate.class)
+                definition.addProperty("selected-date", LocalDate.now())
                         .onChange(ModifiedFullCalendar::gotoDate);
 
-        /*
-            Exposes ComponentEvents as DOM events. Sadly, the parameter
-            signature is
-                exposeEvent(Class<? extends ComponentEvent<?>> eventType)
-            instead of
-                exposeEvent(Class<? extends ComponentEvent<C>> eventType)
-            as the component events could be tied to the class being exported or
-            a super class thereof. No compile time protection here.
-         */
-        // added a new <ComponentEvent> that makes more sense to expose
-        configuration.exposeEvent(EntryUpdatedEvent.class);
-        configuration.exposeEvent(EntryDroppedEvent.class,
-                ExposedEntryDroppedEvent::new);
+        definition.setInstanceConfigurator((webComponent, instance) -> {
 
-        configuration.setConstructor(context -> {
-            ModifiedFullCalendar calendar = new ModifiedFullCalendar();
-
-            // calendar does not offer a direct callback for gotoDate-events
-            // we did add a custom `getView` method, but sometimes one must
-            // work with limitations
-            calendar.addViewRenderedListener(event -> {
-                // TODO: this bugs out - the date might have been set on the
-                //       server-side, and causes it to be set again for no
-                //       reason
-                selectedDateProperty.writeProperty(calendar,
-                        event.getIntervalStart());
-
-                // update entries based on what is visible
-                List<Entry> entries = calendar.getEntries(
+            instance.addViewRenderedListener(event -> {
+                // update entries based on what is visible on the calendar
+                List<Entry> entries = instance.getEntries(
                         event.getStart().atStartOfDay(),
                         event.getEnd().atStartOfDay());
-                entryProperty.writeProperty(calendar, entries);
+
+                webComponent.setProperty(entriesProperty, entries);
+
+                webComponent.setProperty(selectedDateProperty,
+                        event.getIntervalStart());
             });
 
-            // is there an existing way to push DOM events
-            EventPublisher publisher = context.getEventPublisher("calendar" +
-                    "-notification-event");
 
-            // publishes CalendarNotification as a DOM event - could publish
-            // some BEAN based on the notification.
-            calendar.addNotificationHandler(publisher::publishAsDOMEvent);
+            instance.addNotificationListener(notification -> {
+                JsonValue notificationJson = makeNotificationJSON(notification);
+                webComponent.fireEvent("notification-event", notificationJson);
+            });
 
-            return calendar;
+            List<Entry> returnedEntries =
+                    webComponent.getProperty(entriesProperty);
+
         });
+    }
+
+    private JsonValue makeNotificationJSON(CalendarNotification notification) {
+        return null;
     }
 }

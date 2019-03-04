@@ -16,7 +16,7 @@ public class ModifiedFullCalendar extends FullCalendar {
         return null;
     }
 
-    public void setUser(Integer integer) {
+    public void setUser(int integer) {
     }
 
     public Registration addEntryUpdateListener(
@@ -24,7 +24,7 @@ public class ModifiedFullCalendar extends FullCalendar {
         return null;
     }
 
-    public Registration addNotificationHandler(
+    public Registration addNotificationListener(
             SerializableConsumer<CalendarNotification> notificationHandler) {
         return null;
     }
