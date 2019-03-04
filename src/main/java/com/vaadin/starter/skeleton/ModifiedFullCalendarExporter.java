@@ -17,7 +17,9 @@ import com.vaadin.starter.skeleton.exporter.WebComponentConfiguration;
 import com.vaadin.starter.skeleton.exporter.WebComponentExporter;
 
 
-public class ModifiedFullCalendarExporter implements WebComponentExporter<ModifiedFullCalendar> {
+public class ModifiedFullCalendarExporter implements
+        WebComponentExporter<ModifiedFullCalendar> {
+
     @Override
     public String getTag() {
         return "modified-full-calendar";
@@ -26,6 +28,7 @@ public class ModifiedFullCalendarExporter implements WebComponentExporter<Modifi
     @Override
     public void configure(WebComponentConfiguration<ModifiedFullCalendar> configuration) {
         configuration.addProperty("user-id", Integer.class)
+                // validation is inside handler, exception based
                 .onChange(ModifiedFullCalendar::setUser)
                 // no property update events (better name pending)
                 .noNotify();
@@ -40,11 +43,12 @@ public class ModifiedFullCalendarExporter implements WebComponentExporter<Modifi
                 .updateOn(ViewChangedEvent.class,
                         ModifiedFullCalendar::getView);
 
+        // the property reference type is pretty ugly
         PropertyConfiguration<ModifiedFullCalendar, List<Entry>> entryProperty =
-                configuration.addListProperty("events", Entry.class)
+                // add a list property
+                configuration.addListProperty("entries", Entry.class)
                 .readOnly();
 
-        // this is ugly
         PropertyConfiguration<ModifiedFullCalendar, LocalDate> selectedDateProperty =
                 configuration.addProperty("selected-date",
                         LocalDate.class)
@@ -72,7 +76,8 @@ public class ModifiedFullCalendarExporter implements WebComponentExporter<Modifi
             // work with limitations
             calendar.addViewRenderedListener(event -> {
                 // TODO: this bugs out - the date might have been set on the
-                //       server-side, and that is not nice
+                //       server-side, and causes it to be set again for no
+                //       reason
                 selectedDateProperty.writeProperty(calendar,
                         event.getIntervalStart());
 
@@ -84,9 +89,11 @@ public class ModifiedFullCalendarExporter implements WebComponentExporter<Modifi
             });
 
             // is there an existing way to push DOM events
-            EventPublisher publisher = context.getEventPublisher();
+            EventPublisher publisher = context.getEventPublisher("calendar" +
+                    "-notification-event");
 
-            // or some some BEAN based on notification:
+            // publishes CalendarNotification as a DOM event - could publish
+            // some BEAN based on the notification.
             calendar.addNotificationHandler(publisher::publishAsDOMEvent);
 
             return calendar;
