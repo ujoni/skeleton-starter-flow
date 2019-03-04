@@ -8,8 +8,6 @@ import org.vaadin.stefan.fullcalendar.Entry;
 import org.vaadin.stefan.fullcalendar.EntryDroppedEvent;
 import org.vaadin.stefan.fullcalendar.FullCalendar;
 
-import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponent;
 import com.vaadin.flow.component.webcomponent.PropertyValueChangeEvent;
 import com.vaadin.flow.component.webcomponent.WebComponentProperty;
